@@ -82,6 +82,7 @@ final class VariantProcessor {
         processGenerateProguard()
         processDataBinding(bundleTask)
         processDeepLinkTasks()
+        processSupportedLocalesTasks()
     }
 
     private static void printEmbedArtifacts(Collection<ResolvedArtifact> artifacts,
@@ -137,13 +138,35 @@ final class VariantProcessor {
     }
 
     private void processDeepLinkTasks() {
-        String taskName = "extractDeepLinksForAar${mVariant.name.capitalize()}"
-        TaskProvider extractDeepLinks = mProject.tasks.named(taskName)
+        String taskName1 = "extractDeepLinksForAar${mVariant.name.capitalize()}"
+        TaskProvider extractDeepLinksForAar = mProject.tasks.named(taskName1)
+        if (extractDeepLinksForAar == null) {
+            throw new RuntimeException("Can not find task ${taskName1}!")
+        }
+
+        extractDeepLinksForAar.configure {
+            dependsOn(mExplodeTasks)
+        }
+
+        String taskName2 = "extractDeepLinks${mVariant.name.capitalize()}"
+        TaskProvider extractDeepLinks = mProject.tasks.named(taskName2)
         if (extractDeepLinks == null) {
-            throw new RuntimeException("Can not find task ${taskName}!")
+            throw new RuntimeException("Can not find task ${taskName2}!")
         }
 
         extractDeepLinks.configure {
+            dependsOn(mExplodeTasks)
+        }
+    }
+
+    private void processSupportedLocalesTasks() {
+        String taskName = "extract${mVariant.name.capitalize()}SupportedLocales"
+        TaskProvider extractSupportedLocales = mProject.tasks.named(taskName)
+        if (extractSupportedLocales== null) {
+            throw new RuntimeException("Can not find task ${taskName}!")
+        }
+
+        extractSupportedLocales.configure {
             dependsOn(mExplodeTasks)
         }
     }
